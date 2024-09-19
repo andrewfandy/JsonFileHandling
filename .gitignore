@@ -1,0 +1,63 @@
+# Ignore Visual Studio temporary files, build results, and
+# folder-based project files.
+#
+# Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files (Mono Auto Generated)
+mono_crash.*
+
+# User-specific files (Visual Studio Code)
+.vscode/
+
+# Logs
+logs
+*.log
+*.tlg
+*.out
+*.err
+*.[Tt]xt
+*.nupkg
+
+# Temporary directories
+[Tt]emp/
+[Tt]est[Rr]esults/
+[Bb]uild[Ll]ogs/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Xx]64/
+[Xx]86/
+build/
+[Bb]in/
+[Oo]bj/
+[Ll]ib/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Include your "data" directory
+data/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+.nuget/
+
+# Microsoft Visual Studio Code workspace
+.vscode/
+
+# Rider project files
+.idea/
+
+# Resharper files
+.ReSharper*/
