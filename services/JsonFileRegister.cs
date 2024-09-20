@@ -3,6 +3,11 @@ namespace JsonFileHandling;
 
 public static class JsonFileRegister
 {
+
+    /// <summary>
+    /// Register files from the directory to the <returns>JsonFile</returns> object
+    /// </summary>
+    /// <param name="filePath">Requires a directory</param>
     public static List<JsonFile> RegisterManyFiles(string filePath)
     {
         List<JsonFile> jsonFiles = null!;
@@ -32,6 +37,11 @@ public static class JsonFileRegister
         }
         return jsonFiles;
     }
+
+    /// <summary>
+    /// Register file to the <returns>JsonFile</returns> object
+    /// </summary>
+    /// <param name="filePath">Requires a file of .json path</param>
     public static JsonFile RegisterSingleFile(string filePath)
     {
         JsonFile json = null!;
