@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace JsonFileHandling;
 
 
@@ -8,6 +10,7 @@ public class App
         Console.WriteLine("=== JSON FILE HANDLER APP ===");
         Run();
     }
+
 
     private void Run()
     {
@@ -31,12 +34,8 @@ public class App
 
             if (confirmed != null && draft != null)
             {
-                Console.WriteLine("Success");
-            }
-            else
-            {
-                Console.WriteLine("Failed to Register JSON File");
-                Run();
+                Console.WriteLine("Processing...");
+                ProcessSingleFile(confirmed, draft);
             }
         }
         else if (Directory.Exists(pathConfirmed) && Directory.Exists(pathDraft))
@@ -45,12 +44,6 @@ public class App
             var draft = JsonFileRegister.RegisterManyFiles(pathDraft);
             if (confirmed != null && draft != null)
             {
-                Console.WriteLine("Success");
-            }
-            else
-            {
-                Console.WriteLine("Failed to Register JSON File");
-                Run();
             }
         }
         else

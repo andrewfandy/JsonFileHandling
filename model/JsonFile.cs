@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace JsonFileHandling;
@@ -6,13 +5,27 @@ namespace JsonFileHandling;
 
 public class JsonFile
 {
+    /// <summary>
+    /// A file's path of the JSON
+    /// </summary>
     public string FilePath { get; private set; }
-    // public JObject JsonObject { get; private set; }
+
+    /// <summary>
+    /// Get list of properties inside the JSON File
+    /// </summary>
+    public List<JProperty> Properties { get; private set; }
+
+    /// <summary>
+    /// Get <returns>JObject</returns>
+    /// </summary>
+    public JObject JsonObject { get; private set; }
     // required public JToken token { get; set; }
-    public JsonFile(string Path)
+    public JsonFile(string path)
     {
-        FilePath = Path;
-        // JsonObject = JsonConvert.DeserializeObject
+        FilePath = path;
+        string json = File.ReadAllText(FilePath);
+        JsonObject = JObject.Parse(json); // deserializing the file to jsonobject
+        Properties = JsonObject.Properties().ToList();
     }
 
 }
