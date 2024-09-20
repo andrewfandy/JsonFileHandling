@@ -7,12 +7,13 @@ namespace JsonFileHandling;
 public class JsonFile
 {
     public string FilePath { get; private set; }
-    // public JObject JsonObject { get; private set; }
+    public JObject JsonObject { get; private set; }
     // required public JToken token { get; set; }
-    public JsonFile(string Path)
+    public JsonFile(string path)
     {
-        FilePath = Path;
-        // JsonObject = JsonConvert.DeserializeObject
+        FilePath = path;
+        string json = File.ReadAllText(FilePath);
+        JsonObject = JObject.Parse(json); // deserializing the file to jsonobject
     }
 
 }
