@@ -5,34 +5,62 @@ public class App
 {
     public App()
     {
+        Console.WriteLine("=== JSON FILE HANDLER APP ===");
         Run();
     }
 
     private void Run()
     {
-        Console.WriteLine("=== JSON FILE HANDLER APP ===");
-        string path = "";
-        while (string.IsNullOrEmpty(path))
+        string pathConfirmed = "";
+        string pathDraft = "";
+        while (string.IsNullOrEmpty(pathConfirmed))
         {
-            Console.WriteLine("Input folder path: ");
-            path = Console.ReadLine()!;
+            Console.WriteLine("Input path of confirmed doc: ");
+            pathConfirmed = Console.ReadLine()!;
         }
-        if (File.Exists(path))
+        while (string.IsNullOrEmpty(pathDraft))
         {
-            JsonFile confirmed = JsonFileRegister.RegisterSingleFile(path);
-            JsonFile draft = JsonFileRegister.RegisterSingleFile(path);
-            ProcessSingleFile(confirmed, draft);
+
+            Console.WriteLine("Input path of draft doc: ");
+            pathDraft = Console.ReadLine()!;
         }
-        else if (Directory.Exists(path))
+        if (File.Exists(pathConfirmed) && File.Exists(pathDraft))
         {
-            List<JsonFile> files = JsonFileRegister.RegisterManyFiles(path);
-            Console.WriteLine("Success");
-            // ProcessingManyFiles(files);
+            var confirmed = JsonFileRegister.RegisterSingleFile(pathConfirmed);
+            var draft = JsonFileRegister.RegisterSingleFile(pathDraft);
+
+            if (confirmed != null && draft != null)
+            {
+                Console.WriteLine("Success");
+            }
+            else
+            {
+                Console.WriteLine("Failed to Register JSON File");
+                Run();
+            }
+        }
+        else if (Directory.Exists(pathConfirmed) && Directory.Exists(pathDraft))
+        {
+            var confirmed = JsonFileRegister.RegisterManyFiles(pathConfirmed);
+            var draft = JsonFileRegister.RegisterManyFiles(pathDraft);
+            if (confirmed != null && draft != null)
+            {
+                Console.WriteLine("Success");
+            }
+            else
+            {
+                Console.WriteLine("Failed to Register JSON File");
+                Run();
+            }
+        }
+        else
+        {
+            Console.WriteLine("Either the JSON File(s) or Path(s) doesn't exists");
+            Run();
         }
     }
     private void ProcessSingleFile(JsonFile confirmedFile, JsonFile draftFile)
     {
-        Console.WriteLine($"Processing {confirmedFile.FilePath} and {draftFile.FilePath}");
 
     }
     private void ProcessingManyFiles(List<JsonFile> confirmedFiles, List<JsonFile> draftFiles)
