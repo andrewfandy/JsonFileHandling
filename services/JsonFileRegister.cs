@@ -1,51 +1,50 @@
+using JsonFileHandling;
 
-namespace JsonFileHandling;
+namespace model;
 
 public static class JsonFileRegister
 {
-
-    /// <summary>
-    /// Register files from the directory to the <returns>JsonFile</returns> object
-    /// </summary>
-    /// <param name="filePath">Requires a directory</param>
-    public static List<JsonFile> RegisterManyFiles(string filePath)
+    public static JsonFile? RegisterFile(string path)
     {
-        List<JsonFile> jsonFiles = null!;
-        try
-        {
-            jsonFiles = new List<JsonFile>();
-            string[] files = Directory.GetFiles(filePath);
-            foreach (string file in files)
-            {
-                if (!Validation.IsJsonFile(file)) continue;
-                jsonFiles.Add(new JsonFile(file));
-            }
+        if (JsonExistsInPath(path)) return new JsonFile(path);
 
-            if (files.Count() < 1) throw new Exception("JSON File not found");
-        }
-        catch (DirectoryNotFoundException de)
+        return null;
+    }
+
+    public static List<JsonFile?> RegisterFiles(string path)
+    {
+        List<JsonFile?> jsonFiles = new List<JsonFile?>();
+        var files = Directory.GetFiles(path);
+        foreach (var file in files)
         {
-            Console.WriteLine(de.Message);
-        }
-        catch (FileNotFoundException fe)
-        {
-            Console.WriteLine(fe.Message);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
+            jsonFiles.Add(RegisterFile(file));
         }
         return jsonFiles;
     }
 
-    /// <summary>
-    /// Register file to the <returns>JsonFile</returns> object
-    /// </summary>
-    /// <param name="filePath">Requires a file of .json path</param>
-    public static JsonFile RegisterSingleFile(string filePath)
+
+    private static bool JsonExistsInPath(string path)
     {
-        JsonFile json = null!;
-        if (Validation.IsJsonFile(filePath)) json = new JsonFile(filePath);
-        return json;
+        try
+        {
+            if (Path.GetFileName(path).EndsWith(".json") && File.Exists(path)) return true;
+
+
+            var files = Directory.GetFiles(path);
+            if (files.Any(file => file.EndsWith(".json"))) return true;
+
+            throw new FileNotFoundException();
+        }
+        catch (DirectoryNotFoundException)
+        {
+            Console.WriteLine($"\nDirectory {path} not found\n");
+            return false;
+        }
+        catch (FileNotFoundException)
+        {
+            Console.WriteLine("\nJSON File not found\n");
+            return false;
+        }
     }
+
 }

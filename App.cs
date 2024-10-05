@@ -1,4 +1,7 @@
-using System.Diagnostics;
+
+using model;
+using services;
+using utils;
 
 namespace JsonFileHandling;
 
@@ -14,51 +17,41 @@ public class App
 
     private void Run()
     {
-        string pathConfirmed = "";
-        string pathDraft = "";
-        while (string.IsNullOrEmpty(pathConfirmed))
-        {
-            Console.WriteLine("Input path of confirmed doc: ");
-            pathConfirmed = Console.ReadLine()!;
-        }
-        while (string.IsNullOrEmpty(pathDraft))
-        {
+        Console.WriteLine("INPUT DRAFT FILE");
+        var draftFile = JsonFileRegister.RegisterFile(InputHelper.Input("Input .json file: "));
 
-            Console.WriteLine("Input path of draft doc: ");
-            pathDraft = Console.ReadLine()!;
-        }
-        if (File.Exists(pathConfirmed) && File.Exists(pathDraft))
-        {
-            var confirmed = JsonFileRegister.RegisterSingleFile(pathConfirmed);
-            var draft = JsonFileRegister.RegisterSingleFile(pathDraft);
+        Console.WriteLine("\nINPUT CONFIRMED FILE");
+        var confirmedFile = JsonFileRegister.RegisterFile(InputHelper.Input("Input .json file: "));
 
-            if (confirmed != null && draft != null)
+        var compared = JsonHandlingService.CompareAndMerge(draftFile, confirmedFile);
+
+        if (compared == null)
+        {
+            Console.WriteLine("Compared JObject null");
+            return;
+        }
+        // var matchedDb = JsonHandlingService.CompareFieldsOnDB(compared);
+        foreach (var obj in compared)
+        {
+            Console.WriteLine(obj.ToString());
+        }
+
+        Console.WriteLine("\nProcess Ends\nStart again?press 'y' or 'n'");
+        ConsoleKey key;
+        do
+        {
+            key = Console.ReadKey(intercept: true).Key;
+            if (key == ConsoleKey.Y)
             {
-                Console.WriteLine("Processing...");
-                ProcessSingleFile(confirmed, draft);
+                new App();
             }
-        }
-        else if (Directory.Exists(pathConfirmed) && Directory.Exists(pathDraft))
-        {
-            var confirmed = JsonFileRegister.RegisterManyFiles(pathConfirmed);
-            var draft = JsonFileRegister.RegisterManyFiles(pathDraft);
-            if (confirmed != null && draft != null)
+            else if (key == ConsoleKey.N)
             {
+                Console.WriteLine("Good bye");
+                return;
             }
-        }
-        else
-        {
-            Console.WriteLine("Either the JSON File(s) or Path(s) doesn't exists");
-            Run();
-        }
-    }
-    private void ProcessSingleFile(JsonFile confirmedFile, JsonFile draftFile)
-    {
+        } while (key != ConsoleKey.Y || key != ConsoleKey.N);
 
-    }
-    private void ProcessingManyFiles(List<JsonFile> confirmedFiles, List<JsonFile> draftFiles)
-    {
-        // foreach()
-        // Console.WriteLine($"Processing {confirmedFile.FilePath} and {draftFile.FilePath}");
     }
 }
+
