@@ -1,3 +1,4 @@
 ﻿using JsonFileHandling;
 
-new App();
+var app = new App();
+app.RunAsync().Wait();
