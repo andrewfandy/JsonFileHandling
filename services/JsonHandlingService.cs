@@ -11,7 +11,13 @@ public static class JsonHandlingService
 {
 
 
-    public static void SerializeJSON(JObject json, string outputDir, string? fileName = "output.json")
+    /// <summary>
+    /// Serialize JObject to target path
+    /// </summary>
+    /// <param name="json">A JSON Object</param>
+    /// <param name="outputDir">Output directory (must valid)</param>
+    /// <param name="fileName">Output file name</param>
+    public static void SerializeJSONToFIle(JObject json, string outputDir, string? fileName = "output.json")
     {
         try
         {
@@ -25,7 +31,7 @@ public static class JsonHandlingService
         catch (UnauthorizedAccessException)
         {
             string output = InputHelper.Input("DIRECTORY UNACCESSIBLE, PLEASE INPUT AGAIN: ");
-            SerializeJSON(json, output, fileName);
+            SerializeJSONToFIle(json, output, fileName);
         }
 
     }
@@ -69,7 +75,7 @@ public static class JsonHandlingService
     /// </summary>
     /// <param name="jsonObject">a JSON Object</param>
     /// <returns>JObject</returns>
-    public static JObject CompareFieldsOnDB(JObject jsonObject)
+    public static JObject RestructureJSON(JObject jsonObject)
     {
 
         var result = new JObject();
@@ -102,6 +108,7 @@ public static class JsonHandlingService
 
             content.Remove("Deductible");
             content.Remove("Conditions");
+            content.Remove("Rate");
 
             result.Add(certificate, content);
 
@@ -186,9 +193,5 @@ public static class JsonHandlingService
 
     }
 
-    /*
-        TODO:
-        - Apply JSON Serialize to a file
-    */
 
 }
