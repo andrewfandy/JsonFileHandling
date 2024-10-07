@@ -1,5 +1,6 @@
 
 using model;
+using Newtonsoft.Json.Linq;
 using services;
 using utils;
 
@@ -11,33 +12,25 @@ public class App
     public App()
     {
         Console.WriteLine("=== JSON FILE HANDLER APP ===");
-        Run();
     }
 
 
-    private void Run()
+    public async Task RunAsync()
     {
-        Console.WriteLine("INPUT DRAFT FILE");
-        var draftFile = JsonFileRegister.RegisterFile(InputHelper.Input("Input .json file: "));
+        var draftFile = JsonFileRegister.RegisterFile(InputHelper.Input("INPUT DRAFT .JSON FILE: "));
 
-        Console.WriteLine("\nINPUT CONFIRMED FILE");
-        var confirmedFile = JsonFileRegister.RegisterFile(InputHelper.Input("Input .json file: "));
+        var confirmedFile = JsonFileRegister.RegisterFile(InputHelper.Input("INPUT CONFIRMED .JSON FILE: "));
 
-        var compared = JsonHandlingService.CompareAndMerge(draftFile, confirmedFile);
+        var comparedJSON = JsonHandlingService.CompareAndMerge(draftFile, confirmedFile);
 
-        if (compared == null)
+        if (comparedJSON == null)
         {
             Console.WriteLine("Compared JObject null");
             return;
         }
-        var matchedDb = JsonHandlingService.CompareFieldsOnDB(compared);
+        var restructuredJSON = JsonHandlingService.RestructureJSON(comparedJSON);
 
-
-        string outDirectory = InputHelper.Input("INPUT OUTPUT DIR: ");
-        string outputFileName = InputHelper.Input("INPUT OUTPUT FILE NAME: ");
-        if (!outputFileName.ToLower().EndsWith(".json")) outputFileName += ".json";
-
-        JsonHandlingService.SerializeJSON(matchedDb, outDirectory, outputFileName);
+        await LoadToDB(restructuredJSON);
 
         Console.WriteLine("\nProcess Ends\nStart again?press 'y' or 'n'");
         ConsoleKey key;
@@ -54,7 +47,39 @@ public class App
                 return;
             }
         } while (key != ConsoleKey.Y || key != ConsoleKey.N);
+    }
 
+    private async Task LoadToDB(JObject? obj)
+    {
+        if (obj == null)
+        {
+            Console.WriteLine("JObject is null!");
+            return;
+        }
+        string user = InputHelper.Input("EMAIL: ");
+        string password = InputHelper.Input("PASSWORD: ");
+        string host = "http://localhost:5249/";
+        JsonDBLoader loader = new JsonDBLoader(obj, host, user, password);
+
+
+        await loader.TryLoginAsync();
+
+        await loader.TryInputCertificate();
+
+    }
+
+    private void LoadToJSONFile(JObject? obj)
+    {
+        if (obj == null)
+        {
+            Console.WriteLine("JObject is null!");
+            return;
+        }
+        string outDirectory = InputHelper.Input("INPUT OUTPUT DIR: ");
+        string outputFileName = InputHelper.Input("INPUT OUTPUT FILE NAME: ");
+        if (!outputFileName.ToLower().EndsWith(".json")) outputFileName += ".json";
+
+        JsonHandlingService.SerializeJSONToFIle(obj, outDirectory, outputFileName);
     }
 }
 
