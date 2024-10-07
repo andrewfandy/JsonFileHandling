@@ -26,7 +26,8 @@ public static class JsonHandlingService
         }
         catch (DirectoryNotFoundException)
         {
-            throw new UnauthorizedAccessException();
+            string output = InputHelper.Input("DIRECTORY NOT FOUND, PLEASE INPUT AGAIN: ");
+            SerializeJSONToFIle(json, output, fileName);
         }
         catch (UnauthorizedAccessException)
         {
@@ -50,9 +51,9 @@ public static class JsonHandlingService
             var key = obj.Key;
             var val = (JObject?)obj.Value;
 
-            if (!val!.ContainsKey("Transhipment"))
+            if (!val!.ContainsKey("transhipment"))
             {
-                val["Transhipment"] = null;
+                val["transhipment"] = null;
             }
 
             result[key] = val;
@@ -62,8 +63,7 @@ public static class JsonHandlingService
         {
             var key = obj.Key;
             var val = (JObject?)obj.Value;
-            // Revise the value
-            val!["IsConfirmed"] = true;
+            val!["isConfirmed"] = true;
             result[key] = val;
         }
 
@@ -85,37 +85,52 @@ public static class JsonHandlingService
             var certificate = obj.Key;
             var content = (JObject?)obj.Value;
 
+            content!["policyId"] = PolicyId;
+            content.Remove("theInsured");
+            content.Remove("address");
 
-            content!["PolicyId"] = PolicyId;
-            content.Remove("TheInsured");
-            content.Remove("Address");
+            if (!content.ContainsKey("transhipment"))
+            {
+                content["transhipment"] = null;
+            }
 
-            var CurrencyId = GetCurrencyId(content.Value<string>("Currency")!);
-            content["CurrencyId"] = CurrencyId;
-            content.Remove("Currency");
+            var CurrencyId = GetCurrencyId(content.Value<string>("currency")!);
+            content["currencyId"] = CurrencyId;
+            content.Remove("currency");
 
-            SeparateNewToken(content, "BLNo", "BLNumber", "BLNumberDate");
-            content.Remove("BLNo");
+            SeparateNewToken(content, "blNo", "blNumber", "blNumberDate");
+            content.Remove("blNo");
 
-            SeparateNewToken(content, "InvoiceNo", "InvoiceNumber", "InvoiceNumberDate");
-            content.Remove("InvoiceNo");
+            SeparateNewToken(content, "invoiceNo", "invoiceNumber", "invoiceNumberDate");
+            content.Remove("invoiceNo");
 
-            content["LCNumber"] = content["DocumentaryCreditNo"];
-            content.Remove("DocumentaryCreditNo");
+            content["lcNumber"] = content["documentaryCreditNo"];
+            content.Remove("documentaryCredit");
 
-            content["SailingDate"] = content["DateOfDeparture"];
-            content.Remove("DateOfDeparture");
+            content["sailingDate"] = content["dateOf"];
+            content.Remove("dateOf");
 
-            content.Remove("Deductible");
-            content.Remove("Conditions");
-            content.Remove("Rate");
+            content.Remove("deductible");
+            content.Remove("conditions");
+            content.Remove("rate");
 
+            // ReplaceNewLine(content, "interestInsured");
+            // ReplaceNewLine(content, "consignee");
             result.Add(certificate, content);
 
         }
 
         return JObject.FromObject(result);
     }
+
+    private static void ReplaceNewLine(JToken? jToken, string key)
+    {
+        var value = jToken!.Value<string>(key);
+
+        jToken[key] = value!.Replace(@"\n", @"\\n");
+
+    }
+
     private static int GetCurrencyId(string val)
     {
         var currencyKeyValuePairs = new Dictionary<string, int>

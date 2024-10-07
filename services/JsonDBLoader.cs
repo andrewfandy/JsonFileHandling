@@ -103,14 +103,15 @@ public class JsonDBLoader
             Console.WriteLine($"Inputting {id}");
 
             var obj = (JObject)json.Value!;
-            bool confirmed = obj.Value<bool>("IsConfirmed");
-            obj.Remove("IsConfirmed");
-            obj.Remove("IsReported");
-            obj["UserEmail"] = _user;
+            bool confirmed = obj.Value<bool>("isConfirmed");
+            obj.Remove("isConfirmed");
+            obj.Remove("isReported");
+            obj["userEmail"] = _user;
 
-            Console.WriteLine(obj.ToString());
 
-            var payload = JsonSerializer.Serialize(obj);
+            var payload = obj.ToString();
+
+            Console.WriteLine(payload);
             using StringContent content = new StringContent(
                         payload,
                         Encoding.UTF8,
@@ -134,9 +135,7 @@ public class JsonDBLoader
             else
             {
                 var error = JObject.Parse(message);
-                var status = error["status"];
-                var errors = error["errors"];
-                Console.WriteLine($"Error\nStatus:{status}\nErrors occured: {errors}");
+                Console.WriteLine($"Error: {error.ToString()}");
                 break;
             }
         }
