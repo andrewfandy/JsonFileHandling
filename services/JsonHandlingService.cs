@@ -26,7 +26,8 @@ public static class JsonHandlingService
         }
         catch (DirectoryNotFoundException)
         {
-            throw new UnauthorizedAccessException();
+            string output = InputHelper.Input("DIRECTORY NOT FOUND, PLEASE INPUT AGAIN: ");
+            SerializeJSONToFIle(json, output, fileName);
         }
         catch (UnauthorizedAccessException)
         {
@@ -50,7 +51,7 @@ public static class JsonHandlingService
             var key = obj.Key;
             var val = (JObject?)obj.Value;
 
-            if (!val!.ContainsKey("Transhipment"))
+            if (!val!.ContainsKey("transhipment"))
             {
                 val["transhipment"] = null;
             }
@@ -62,7 +63,6 @@ public static class JsonHandlingService
         {
             var key = obj.Key;
             var val = (JObject?)obj.Value;
-            // Revise the value
             val!["isConfirmed"] = true;
             result[key] = val;
         }
@@ -85,10 +85,14 @@ public static class JsonHandlingService
             var certificate = obj.Key;
             var content = (JObject?)obj.Value;
 
-
             content!["policyId"] = PolicyId;
             content.Remove("theInsured");
             content.Remove("address");
+
+            if (!content.ContainsKey("transhipment"))
+            {
+                content["transhipment"] = null;
+            }
 
             var CurrencyId = GetCurrencyId(content.Value<string>("currency")!);
             content["currencyId"] = CurrencyId;
@@ -110,8 +114,8 @@ public static class JsonHandlingService
             content.Remove("conditions");
             content.Remove("rate");
 
-            ReplaceNewLine(content, "interestInsured");
-            ReplaceNewLine(content, "consignee");
+            // ReplaceNewLine(content, "interestInsured");
+            // ReplaceNewLine(content, "consignee");
             result.Add(certificate, content);
 
         }
