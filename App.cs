@@ -30,11 +30,14 @@ public class App
             Console.WriteLine("Compared JObject null");
             return;
         }
-        // var matchedDb = JsonHandlingService.CompareFieldsOnDB(compared);
-        foreach (var obj in compared)
-        {
-            Console.WriteLine(obj.ToString());
-        }
+        var matchedDb = JsonHandlingService.CompareFieldsOnDB(compared);
+
+
+        string outDirectory = InputHelper.Input("INPUT OUTPUT DIR: ");
+        string outputFileName = InputHelper.Input("INPUT OUTPUT FILE NAME: ");
+        if (!outputFileName.ToLower().EndsWith(".json")) outputFileName += ".json";
+
+        JsonHandlingService.SerializeJSON(matchedDb, outDirectory, outputFileName);
 
         Console.WriteLine("\nProcess Ends\nStart again?press 'y' or 'n'");
         ConsoleKey key;
