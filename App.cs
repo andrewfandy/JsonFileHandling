@@ -1,4 +1,5 @@
 
+using System.Text.Json;
 using model;
 using Newtonsoft.Json.Linq;
 using services;
@@ -30,7 +31,14 @@ public class App
         }
         var restructuredJSON = JsonHandlingService.RestructureJSON(comparedJSON);
 
+
         await LoadToDB(restructuredJSON);
+
+        // LoadToJSONFile(restructuredJSON);
+        // foreach (var obj in restructuredJSON)
+        // {
+        //     Console.WriteLine(obj.ToString());
+        // }
 
         Console.WriteLine("\nProcess Ends\nStart again?press 'y' or 'n'");
         ConsoleKey key;
