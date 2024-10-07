@@ -108,9 +108,10 @@ public class JsonDBLoader
             obj.Remove("isReported");
             obj["userEmail"] = _user;
 
-            Console.WriteLine(obj.ToString());
 
-            var payload = JsonSerializer.Serialize(obj);
+            var payload = obj.ToString();
+
+            Console.WriteLine(payload);
             using StringContent content = new StringContent(
                         payload,
                         Encoding.UTF8,
@@ -134,9 +135,7 @@ public class JsonDBLoader
             else
             {
                 var error = JObject.Parse(message);
-                var status = error["status"];
-                var errors = error["errors"];
-                Console.WriteLine($"Error\nStatus:{status}\nErrors occured: {errors}");
+                Console.WriteLine($"Error: {error.ToString()}");
                 break;
             }
         }
