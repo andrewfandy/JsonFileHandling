@@ -103,10 +103,10 @@ public class JsonDBLoader
             Console.WriteLine($"Inputting {id}");
 
             var obj = (JObject)json.Value!;
-            bool confirmed = obj.Value<bool>("IsConfirmed");
-            obj.Remove("IsConfirmed");
-            obj.Remove("IsReported");
-            obj["UserEmail"] = _user;
+            bool confirmed = obj.Value<bool>("isConfirmed");
+            obj.Remove("isConfirmed");
+            obj.Remove("isReported");
+            obj["userEmail"] = _user;
 
             Console.WriteLine(obj.ToString());
 
