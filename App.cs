@@ -71,6 +71,11 @@ public class App
 
 
         await loader.TryLoginAsync();
+        if (string.IsNullOrEmpty(loader.token))
+        {
+            Console.WriteLine("LOGIN FAILED");
+            return;
+        }
 
         await loader.TryInputCertificate();
 

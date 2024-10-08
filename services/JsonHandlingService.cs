@@ -136,7 +136,7 @@ public static class JsonHandlingService
         var currencyKeyValuePairs = new Dictionary<string, int>
         {
             {"EUR", 1}, {"USD", 2}, {"GBP", 3}, {"JPY", 4}, {"AUD", 5}, {"CAD", 6},
-            {"CHF", 7}, {"CNY", 8}, {"INR", 9}, {"IDR", 10}, {"BRL", 11}, {"MXN", 12},
+            {"CHF", 7}, {"CNY", 8},{"RMB",8}, {"INR", 9}, {"IDR", 10}, {"BRL", 11}, {"MXN", 12},
             {"RUB", 13}, {"ZAR", 14}, {"KRW", 15}, {"SGD", 16}, {"NZD", 17}, {"TRY", 18},
             {"SEK", 19}, {"NOK", 20}, {"DKK", 21}, {"PLN", 22}, {"THB", 23}, {"MYR", 24}
         };
@@ -146,6 +146,7 @@ public static class JsonHandlingService
         {
             return currencyKeyValuePairs[val];
         }
+        Console.WriteLine($"{val} not found");
         return 0;
 
     }

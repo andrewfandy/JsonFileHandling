@@ -10,32 +10,7 @@ namespace services;
 
 public class JsonDBLoader
 {
-    /*
-        TODO:
-    - Implement HttpClient request for testing the processed JSON file
-    - Host : http://localhost:5249
-    - POST users/login
-        body:
-        - user: string@gmail.com
-        - password: string
-        - response: token
-    - Store token locally
-    
-    - iteration_1 start
-    - Manually input policy (EQY: 1, SBX: 2)
 
-    - iteration_2 start
-    - POST certificates/
-        header:
-        - Authorization: Bearer ACCESS_TOKEN
-        body:
-        - PolicyId
-        - CurrencyId
-        - ... any processed JObject's field
-    - iteration_2 end
-    - iteration_1 end
-    
-    */
 
     private readonly JObject _jsonObject;
     private readonly HttpClient _client;
@@ -66,23 +41,24 @@ public class JsonDBLoader
                 "application/json"
                 );
 
-            using var response = await _client.PostAsync("/api/users/login", content);
-            string message = await response.Content.ReadAsStringAsync();
+            using var request = await _client.PostAsync("/api/users/login", content);
+            string response = await request.Content.ReadAsStringAsync();
+            var message = JObject.Parse(response);
 
-            var serialize = JObject.Parse(message);
-            if (response.IsSuccessStatusCode)
+            if (request.IsSuccessStatusCode)
             {
                 Console.WriteLine("Login Success");
 
 
 
-                token = serialize["token"]?.ToString();
+                token = message.Value<string>("token");
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
             }
             else
             {
-                Console.WriteLine($"Error:\n{serialize["Message"]?.ToString()}");
+                var error = message.Value<string>("message");
+                Console.WriteLine(new { message = error });
             }
             Console.WriteLine(token);
         }
@@ -100,8 +76,6 @@ public class JsonDBLoader
         foreach (var json in _jsonObject)
         {
             string id = json.Key;
-            Console.WriteLine($"Inputting {id}");
-
             var obj = (JObject)json.Value!;
             bool confirmed = obj.Value<bool>("isConfirmed");
             obj.Remove("isConfirmed");
@@ -111,31 +85,29 @@ public class JsonDBLoader
 
             var payload = obj.ToString();
 
-            Console.WriteLine(payload);
             using StringContent content = new StringContent(
                         payload,
                         Encoding.UTF8,
                         "application/json"
                         );
 
-            using var response = await _client.PostAsync("/api/certificates/", content);
-            var message = await response.Content.ReadAsStringAsync();
+            using var request = await _client.PostAsync("/api/certificates/", content);
+            var response = await request.Content.ReadAsStringAsync();
+            var message = JObject.Parse(response);
 
-            if (response.IsSuccessStatusCode)
+            if (request.IsSuccessStatusCode)
             {
-                Console.WriteLine($"{id} succeed");
+                Console.WriteLine($"{id} inputted");
                 if (confirmed)
                 {
-                    var responseMessage = JObject.Parse(message);
-                    int certId = responseMessage.Value<int>("Id");
-                    Console.WriteLine($"Confirming {certId}");
+                    int certId = message.Value<int>("id");
                     await TryIssued(certId);
                 };
             }
             else
             {
-                var error = JObject.Parse(message);
-                Console.WriteLine($"Error: {error.ToString()}");
+                var error = message.Value<string>("message");
+                Console.WriteLine($"Error: {message}");
                 break;
             }
         }
@@ -143,18 +115,16 @@ public class JsonDBLoader
 
     private async Task TryIssued(int id)
     {
-        var payload = JsonSerializer.Serialize(new { certId = id });
+        var uri = $"api/certificates/issue?certId={id}";
+        using var request = await _client.PutAsync(uri, null);
+        var response = await request.Content.ReadAsStringAsync();
+        var message = JObject.Parse(response);
 
-        var content = new StringContent(
-            payload,
-            Encoding.UTF8,
-            "application/json"
-        );
-        using var response = await _client.PutAsync("/api/certificates/issue", content);
-        var message = await response.Content.ReadAsStringAsync();
-
-        Console.WriteLine(message);
-
-        response.EnsureSuccessStatusCode();
+        if (!request.IsSuccessStatusCode)
+        {
+            var error = message.Value<string>("message");
+            Console.WriteLine(new { message = error });
+            request.EnsureSuccessStatusCode();
+        }
     }
 }
