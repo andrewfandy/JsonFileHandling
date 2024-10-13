@@ -1,4 +1,5 @@
 
+using System.Text;
 using System.Text.Json;
 using model;
 using Newtonsoft.Json.Linq;
@@ -31,14 +32,13 @@ public class App
         }
         var restructuredJSON = JsonHandlingService.RestructureJSON(comparedJSON);
 
+        var certificatesWithLCNumber = JsonHandlingService.GetOnlyLCNumber(restructuredJSON);
 
-        await LoadToDB(restructuredJSON);
+        await LoadToDB(certificatesWithLCNumber);
 
         // LoadToJSONFile(restructuredJSON);
-        // foreach (var obj in restructuredJSON)
-        // {
-        //     Console.WriteLine(obj.ToString());
-        // }
+
+
 
         Console.WriteLine("\nProcess Ends\nStart again?press 'y' or 'n'");
         ConsoleKey key;
@@ -78,6 +78,25 @@ public class App
         }
 
         await loader.TryInputCertificate();
+
+    }
+    private async Task LoadToDB(Dictionary<string, string> obj)
+    {
+        if (obj == null)
+        {
+            Console.WriteLine("JObject is null!");
+            return;
+        }
+        string user = InputHelper.Input("EMAIL: ");
+        string password = InputHelper.Input("PASSWORD: ");
+        string host = "http://192.168.18.227:5249/";
+        JsonDBLoader loader = new JsonDBLoader(obj, host, user, password);
+
+        await loader.TryLoginAsync();
+
+        await loader.TryUpdateLCNumber();
+
+        // await loader.TryInputCertificate();
 
     }
 

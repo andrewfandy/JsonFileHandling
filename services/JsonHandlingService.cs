@@ -104,7 +104,7 @@ public static class JsonHandlingService
             SeparateNewToken(content, "invoiceNo", "invoiceNumber", "invoiceNumberDate");
             content.Remove("invoiceNo");
 
-            content["lcNumber"] = content["documentaryCreditNo"];
+            content["lcNumber"] = content["documentaryCredit"];
             content.Remove("documentaryCredit");
 
             content["sailingDate"] = content["dateOf"];
@@ -123,12 +123,40 @@ public static class JsonHandlingService
         return JObject.FromObject(result);
     }
 
-    private static void ReplaceNewLine(JToken? jToken, string key)
+    // single use
+    public static Dictionary<string, string> GetOnlyLCNumber(JObject obj)
     {
-        var value = jToken!.Value<string>(key);
+        var result = new Dictionary<string, string>();
+        foreach (var certificate in obj)
+        {
+            var key = certificate.Key;
+            var content = (JObject?)certificate.Value;
 
-        jToken[key] = value!.Replace(@"\n", @"\\n");
+            if (content!.ContainsKey("lcNumber"))
+            {
+                var policyId = content.Value<int>("policyId");
+                var certNumber = CertNumberParse(policyId, key);
 
+                result.Add(certNumber, content.Value<string>("lcNumber")!);
+            }
+
+        }
+        return result;
+
+    }
+
+    private static string CertNumberParse(int policyId, string certNumber)
+    {
+        StringBuilder sb = new StringBuilder();
+        if (int.TryParse(certNumber, out int result))
+        {
+            sb.Append("MTWI/MCI/");
+            sb.Append(policyId.ToString("D2"));
+            sb.Append("/");
+            sb.Append(result.ToString("D5"));
+        }
+
+        return sb.ToString();
     }
 
     private static int GetCurrencyId(string val)
