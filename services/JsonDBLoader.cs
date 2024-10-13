@@ -1,6 +1,7 @@
 
 using System.Text;
 using System.Text.Json;
+using System.Xml.Serialization;
 using Newtonsoft.Json.Linq;
 
 namespace services;
@@ -17,6 +18,30 @@ public class InsurancePolicy
     public decimal InsuredValue { get; set; }
     public bool IsConfirmed { get; set; }
     public DateTime CreatedAt { get; set; }
+}
+
+public class CertificateDetailViewModel
+{
+    public int Id { get; set; }
+    public string CertNumber { get; set; }
+    public string UserEmail { get; set; }
+    public int PolicyId { get; set; }
+    public int CurrencyId { get; set; }
+    public string? Consignee { get; set; }
+    public string Conveyance { get; set; }
+    public DateTime SailingDate { get; set; }
+    public decimal InsuredValue { get; set; }
+    public string InterestInsured { get; set; }
+    public string? BLNumber { get; set; }
+    public DateTime? BLNumberDate { get; set; }
+    public string? InvoiceNumber { get; set; }
+    public DateTime? InvoiceNumberDate { get; set; }
+    public string? LCNumber { get; set; }
+    public string? Transhipment { get; set; }
+    public string From { get; set; }
+    public string To { get; set; }
+    public bool IsConfirmed { get; set; }
+    public DateTime LastModified { get; set; }
 }
 
 
@@ -67,9 +92,7 @@ public class JsonDBLoader
             if (request.IsSuccessStatusCode)
             {
                 Console.WriteLine("Login Success");
-
-
-
+                
                 token = message.Value<string>("token");
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
@@ -90,7 +113,7 @@ public class JsonDBLoader
     }
 
 
-    public async Task TryInputCertificate()
+    public async Task TryPostCertificate()
     {
         foreach (var json in _jsonObject)
         {
@@ -132,39 +155,57 @@ public class JsonDBLoader
         }
     }
 
-    public async Task TryUpdateLCNumber()
+    public async Task TryPutCertificate()
     {
         foreach (var obj in _jsonObject)
         {
             var certNumber = obj.Key;
             var lcNumber = obj.Value!.ToString();
 
-
-
-            var getByCertNumber = await _client.GetAsync($"api/certificates/certNumber?certNumber={certNumber}&email={_user}&page={1}&pageSize={10}");
-            var message = JsonDocument.Parse(await getByCertNumber.Content.ReadAsStreamAsync());
+            using var response = await _client.GetAsync($"api/certificates/certNumber?certNumber={certNumber}&email={_user}&page={1}&pageSize={10}");
+            var message = JsonDocument.Parse(await response.Content.ReadAsStreamAsync());
             var root = message.RootElement;
 
-            var data = root.GetProperty("data").EnumerateArray();
-            foreach (var certificates in data)
+            var certificates = root.GetProperty("data").EnumerateArray();
+            foreach (var certificate in certificates)
             {
-                Console.WriteLine(certificates);
-                // var json = JsonSerializer.Serialize(new {
-                //     id = certificates.GetProperty("id"),
-
-                // })
-                // var payload = new StringContent(
-                //     json,
-                //     Encoding.UTF8,
-                //     "application/json"
-                // );
+                TryUpdateLCNumber(certificate, lcNumber);
             }
-
-
-
         }
     }
 
+    private async Task TryUpdateLCNumber(JsonElement certificate, string lcNumber)
+    {
+        var id = certificate.GetProperty("id");
+        using var get = await _client.GetAsync($"api/certificates/certificate/{id}?email={_user}");
+        var element = JsonDocument.Parse(await get.Content.ReadAsStringAsync()).RootElement;
+
+        var options = new JsonSerializerOptions
+        {
+            AllowTrailingCommas = true,
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        var cert =
+            JsonSerializer.Deserialize<CertificateDetailViewModel>(element,options);
+
+        cert.LCNumber = lcNumber;
+
+        var newCertJson = JsonSerializer.Serialize(cert);
+        var payload = new StringContent(
+            newCertJson,
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        using var put = await _client.PutAsync("api/certificates/",payload);
+        var message = JsonDocument.Parse(await put.Content.ReadAsStringAsync());
+        if (!put.IsSuccessStatusCode)
+        {
+            var errorMsg = message.RootElement.GetProperty("message").GetString();
+            Console.WriteLine($"{cert.CertNumber}'s LC number failed\nMessage: {errorMsg}");
+        }
+    }
     private async Task TryIssued(int id)
     {
         var uri = $"api/certificates/issue?certId={id}";
