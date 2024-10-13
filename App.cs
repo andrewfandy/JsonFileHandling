@@ -33,12 +33,11 @@ public class App
         var restructuredJSON = JsonHandlingService.RestructureJSON(comparedJSON);
 
         var certificatesWithLCNumber = JsonHandlingService.GetOnlyLCNumber(restructuredJSON);
-
-        await LoadToDB(certificatesWithLCNumber);
+        
 
         // LoadToJSONFile(restructuredJSON);
 
-
+        await Task.WhenAll(LoadToDB(certificatesWithLCNumber));
 
         Console.WriteLine("\nProcess Ends\nStart again?press 'y' or 'n'");
         ConsoleKey key;
@@ -77,7 +76,7 @@ public class App
             return;
         }
 
-        await loader.TryInputCertificate();
+        await loader.TryPostCertificate();
 
     }
     private async Task LoadToDB(Dictionary<string, string> obj)
@@ -89,12 +88,12 @@ public class App
         }
         string user = InputHelper.Input("EMAIL: ");
         string password = InputHelper.Input("PASSWORD: ");
-        string host = "http://192.168.18.227:5249/";
+        string host = "http://localhost:5249/";
         JsonDBLoader loader = new JsonDBLoader(obj, host, user, password);
 
         await loader.TryLoginAsync();
 
-        await loader.TryUpdateLCNumber();
+        await loader.TryPutCertificate();
 
         // await loader.TryInputCertificate();
 
